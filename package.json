@@ -1,0 +1,10 @@
+{
+  "name": "little-demon",
+  "private": true,
+  "scripts": {
+    "start": "serve ."
+  },
+  "devDependencies": {
+    "serve": "^14.2.4"
+  }
+}
