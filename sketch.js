@@ -11,12 +11,14 @@ const EYE_LEFT_IX = 500;
 const EYE_LEFT_IY = 700;
 const EYE_RIGHT_IX = 750;
 const EYE_RIGHT_IY = 700;
-const EYE_DIAM_PX = 10;
+const EYE_DIAM_PX = 20;
 
 const UX_CAPTION =
   "Sympathy for the Devil installation UX test.\n" +
   "Left Click to be a person in front of it\n" +
   "Left Click when you think he gave it all (20s)";
+
+const OZORA_LINE = "It's gonna be a blasting Ozora!";
 
 function preload() {
   img1 = loadImage("data/m1.png");
@@ -42,7 +44,13 @@ function seqElapsed() {
   return millis() - seqStart;
 }
 
-/** 0 = M2 … 4 = A4: la y delle pupille scende di 10 px (valore y più piccolo) a ogni step */
+/** 0 = M2 … 4 = A4: −10 px a step; su A4 l'ultimo passo è −20 (−50 px totali) */
+function pupilYOffsetPx(phaseIdx) {
+  if (phaseIdx <= 0) return 0;
+  if (phaseIdx < 4) return -10 * phaseIdx;
+  return -10 * (phaseIdx - 1) - 20;
+}
+
 function slidePhaseFromElapsed(t) {
   if (t < STEP_MS) return 0;
   if (t < 2 * STEP_MS) return 1;
@@ -76,7 +84,7 @@ function drawEyesOnImage(img, imgLeft, imgTop, dispW, dispH, phaseIdx) {
   const sx = dispW / img.width;
   const sy = dispH / img.height;
   const d = EYE_DIAM_PX * sx;
-  const yBump = -10 * phaseIdx;
+  const yBump = pupilYOffsetPx(phaseIdx);
 
   const leftOx = imgLeft + EYE_LEFT_IX * sx;
   const leftOy = imgTop + EYE_LEFT_IY * sy + yBump;
@@ -91,6 +99,17 @@ function drawEyesOnImage(img, imgLeft, imgTop, dispW, dispH, phaseIdx) {
   noStroke();
   circle(leftP.x, leftP.y, d);
   circle(rightP.x, rightP.y, d);
+  pop();
+}
+
+function drawOzoraLine(margin) {
+  push();
+  textFont("Roboto");
+  textSize(24);
+  textAlign(RIGHT, TOP);
+  fill(0);
+  noStroke();
+  text(OZORA_LINE, width - margin, margin);
   pop();
 }
 
@@ -116,7 +135,7 @@ function currentImage() {
 }
 
 function draw() {
-  background(255);
+  background("#f9f9f9");
 
   const img = currentImage();
   if (!img || img.width === 0) return;
@@ -145,4 +164,5 @@ function draw() {
   }
 
   drawUxCaption(margin);
+  drawOzoraLine(margin);
 }
