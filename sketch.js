@@ -14,14 +14,21 @@ const EYE_LEFT_IX = 500;
 const EYE_LEFT_IY = 700;
 const EYE_RIGHT_IX = 750;
 const EYE_RIGHT_IY = 700;
-const EYE_DIAM_PX = 20;
+const EYE_DIAM_BASE = 20;
+const POINTER_STILL_PX = 2;
+
+let ptrLastX = null;
+let ptrLastY = null;
+let ptrStillSince = null;
 
 const UX_CAPTION =
   "Sympathy for the Devil installation UX test.\n" +
   "Left Click to be a person in front of it\n" +
-  "Left Click when you think he gave it all (20s)";
+  "Left Click when you think he gave it all (20s)\n" +
+  "the lack of movement of the closest person to the demon\n" +
+  "will be identified as \"gaze\" making him furious";
 
-const OZORA_LINE = "It's gonna be a blasting Ozora!";
+const OZORA_LINE = "It's gonna be a blasting Ozora! Kirai!";
 
 function preload() {
   img1 = loadImage("data/m1.png");
@@ -117,6 +124,34 @@ function pointerY() {
   return mouseY;
 }
 
+function resetPointerStillness() {
+  ptrLastX = null;
+  ptrLastY = null;
+  ptrStillSince = null;
+}
+
+function updatePointerStillnessForEyes() {
+  const x = pointerX();
+  const y = pointerY();
+  const now = millis();
+  if (ptrLastX === null || ptrLastY === null) {
+    ptrLastX = x;
+    ptrLastY = y;
+    ptrStillSince = now;
+    return;
+  }
+  if (Math.hypot(x - ptrLastX, y - ptrLastY) > POINTER_STILL_PX) {
+    ptrLastX = x;
+    ptrLastY = y;
+    ptrStillSince = now;
+  }
+}
+
+function eyeDiamImagePx() {
+  if (ptrStillSince === null) return EYE_DIAM_BASE;
+  return EYE_DIAM_BASE + Math.floor((millis() - ptrStillSince) / 100);
+}
+
 const EYE_FOLLOW_RADIUS = 5;
 
 function clampedFollow(ox, oy, targetX, targetY, maxDist) {
@@ -132,7 +167,7 @@ function drawEyesOnImage(img, imgLeft, imgTop, dispW, dispH, phaseIdx) {
   if (!img || img.width === 0) return;
   const sx = dispW / img.width;
   const sy = dispH / img.height;
-  const d = EYE_DIAM_PX * sx;
+  const d = eyeDiamImagePx() * sx;
   const yBump = pupilYOffsetPx(phaseIdx);
 
   const leftOx = imgLeft + EYE_LEFT_IX * sx;
@@ -157,7 +192,8 @@ function drawEyesOnImage(img, imgLeft, imgTop, dispW, dispH, phaseIdx) {
 
   push();
   fill(255, 0, 0);
-  noStroke();
+  stroke(0);
+  strokeWeight(2);
   circle(leftP.x, leftP.y, d);
   circle(rightP.x, rightP.y, d);
   pop();
@@ -198,6 +234,10 @@ function currentImage() {
 function draw() {
   background("#f9f9f9");
 
+  if (seqStart === null) {
+    resetPointerStillness();
+  }
+
   const img = currentImage();
   if (!img || img.width === 0) return;
 
@@ -214,6 +254,7 @@ function draw() {
 
   if (seqStart !== null) {
     const t = seqElapsed();
+    updatePointerStillnessForEyes();
     drawEyesOnImage(
       img,
       imgLeft,
