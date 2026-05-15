@@ -5,6 +5,9 @@ let slides = [];
 /** `null` = solo M1 senza pupille; dopo il primo click parte la sequenza */
 let seqStart = null;
 
+let lastTouchX = null;
+let lastTouchY = null;
+
 const STEP_MS = 5000;
 
 const EYE_LEFT_IX = 500;
@@ -31,12 +34,24 @@ function preload() {
   ];
 }
 
+function canvasSize() {
+  return [window.innerWidth, window.innerHeight];
+}
+
 function setup() {
-  createCanvas(windowWidth, windowHeight);
+  const [cw, ch] = canvasSize();
+  createCanvas(cw, ch);
+  window.addEventListener("orientationchange", () => {
+    setTimeout(() => {
+      const [w, h] = canvasSize();
+      resizeCanvas(w, h);
+    }, 200);
+  });
 }
 
 function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
+  const [cw, ch] = canvasSize();
+  resizeCanvas(cw, ch);
 }
 
 function seqElapsed() {
@@ -59,13 +74,47 @@ function slidePhaseFromElapsed(t) {
   return 4;
 }
 
-function mousePressed() {
+function handlePrimaryInput() {
   const t = seqElapsed();
   if (t === null) {
     seqStart = millis();
     return;
   }
   if (t >= 4 * STEP_MS) seqStart = null;
+}
+
+function mousePressed() {
+  if (touches.length > 0) return;
+  handlePrimaryInput();
+}
+
+function touchStarted() {
+  if (touches.length > 0) {
+    lastTouchX = touches[0].x;
+    lastTouchY = touches[0].y;
+  }
+  handlePrimaryInput();
+  return false;
+}
+
+function touchMoved() {
+  if (touches.length > 0) {
+    lastTouchX = touches[0].x;
+    lastTouchY = touches[0].y;
+  }
+  return false;
+}
+
+function pointerX() {
+  if (touches.length > 0) return touches[0].x;
+  if (lastTouchX !== null) return lastTouchX;
+  return mouseX;
+}
+
+function pointerY() {
+  if (touches.length > 0) return touches[0].y;
+  if (lastTouchY !== null) return lastTouchY;
+  return mouseY;
 }
 
 const EYE_FOLLOW_RADIUS = 5;
@@ -91,8 +140,20 @@ function drawEyesOnImage(img, imgLeft, imgTop, dispW, dispH, phaseIdx) {
   const rightOx = imgLeft + EYE_RIGHT_IX * sx;
   const rightOy = imgTop + EYE_RIGHT_IY * sy + yBump;
 
-  const leftP = clampedFollow(leftOx, leftOy, mouseX, mouseY, EYE_FOLLOW_RADIUS);
-  const rightP = clampedFollow(rightOx, rightOy, mouseX, mouseY, EYE_FOLLOW_RADIUS);
+  const leftP = clampedFollow(
+    leftOx,
+    leftOy,
+    pointerX(),
+    pointerY(),
+    EYE_FOLLOW_RADIUS
+  );
+  const rightP = clampedFollow(
+    rightOx,
+    rightOy,
+    pointerX(),
+    pointerY(),
+    EYE_FOLLOW_RADIUS
+  );
 
   push();
   fill(255, 0, 0);
@@ -106,10 +167,10 @@ function drawOzoraLine(margin) {
   push();
   textFont("Roboto");
   textSize(24);
-  textAlign(RIGHT, TOP);
+  textAlign(RIGHT, BOTTOM);
   fill(0);
   noStroke();
-  text(OZORA_LINE, width - margin, margin);
+  text(OZORA_LINE, width - margin, height - margin);
   pop();
 }
 

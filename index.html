@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  />
   <title>m1 — p5</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -11,10 +14,20 @@
     rel="stylesheet"
   />
   <style>
+    html,
     body {
       margin: 0;
+      height: 100%;
+      width: 100%;
       overflow: hidden;
+      touch-action: none;
       background: #f9f9f9;
+      -webkit-touch-callout: none;
+    }
+    canvas {
+      display: block;
+      touch-action: none;
+      vertical-align: top;
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js"></script>
