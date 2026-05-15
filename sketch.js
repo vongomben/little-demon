@@ -202,7 +202,7 @@ function drawEyesOnImage(img, imgLeft, imgTop, dispW, dispH, phaseIdx) {
 function drawOzoraLine(margin) {
   push();
   textFont("Roboto");
-  textSize(20);
+  textSize(16);
   textAlign(RIGHT, BOTTOM);
   fill(0);
   noStroke();
